@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Plan Set Design - Field Infrastructure</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #f59e0b;
+      --accent-hover: #d97706;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Top Bar & Breadcrumbs */
+    header {
+      background-color: #0b1120;
+      border-bottom: 2px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .breadcrumbs {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .breadcrumbs span {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .status-badge {
+      font-size: 0.75rem;
+      background: #1e293b;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Persistent Sidebar (Power Users) */
+    aside {
+      width: 260px;
+      background-color: #131d31;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+
+    .nav-header {
+      padding: 14px 16px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tree-item {
+      padding: 14px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #1e293b;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .tree-item:hover, .tree-item.active {
+      background-color: var(--card-bg);
+      color: var(--accent);
+      border-left: 4px solid var(--accent);
+    }
+
+    /* Workspace Panel */
+    .viewport {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Beginner Site Map Dashboard Grid */
+    .grid-dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .block-btn {
+      background-color: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+
+    .block-btn:hover {
+      border-color: var(--accent);
+      background-color: #243248;
+    }
+
+    .block-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .block-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Takeoff Node Component */
+    .node-container {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .node-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .slice-mockup {
+      width: 100%;
+      height: 220px;
+      background: #020617;
+      border: 2px dashed #475569;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      position: relative;
+    }
+
+    .slice-annotation {
+      position: absolute;
+      border: 2px solid #ef4444;
+      background: rgba(239, 68, 68, 0.2);
+      padding: 6px 12px;
+      color: #fff;
+      font-weight: bold;
+      font-size: 0.8rem;
+      border-radius: 4px;
+    }
+
+    .data-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .data-pill {
+      background-color: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .data-pill .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .data-pill .val {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
+    .methodology-box {
+      background-color: #0f172a;
+      border-left: 4px solid var(--accent);
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    /* Inspection & Field Capture Module */
+    .ledger-container {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 20px;
+    }
+
+    .capture-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .btn-action {
+      background-color: var(--accent);
+      color: #000;
+      font-weight: 700;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    .btn-action:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .ledger-entry {
+      background-color: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .entry-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .ai-brief {
+      background: #131d31;
+      border: 1px solid #3b82f6;
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 10px;
+      font-size: 0.85rem;
+    }
+
+    /* Responsive adjustments for phones */
+    @media (max-width: 768px) {
+      aside {
+        display: none;
+      }
+      .viewport {
+        padding: 12px;
+      }
+      .grid-dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header & Breadcrumbs -->
+  <header>
+    <div>
+      <div class="brand">📐 PLAN SET DESIGN</div>
+      <div class="breadcrumbs" onclick="showDashboard()">
+        Active: <span id="current-project">Job #40 Andersen</span> &gt; <span id="nav-location">Site Map</span>
+      </div>
+    </div>
+    <div class="status-badge" id="role-tag">GC Admin (Full Control)</div>
+  </header>
+
+  <!-- Main View -->
+  <main>
+    <!-- Left Navigation Bar (Power Users) -->
+    <aside>
+      <div class="nav-header">Jump To Phase</div>
+      <div class="tree-item active" onclick="showDashboard()">📁 Master Site Map</div>
+      <div class="tree-item" onclick="showTakeoff('Framing: 2nd Floor Shear Walls', '1,450 SQ FT', 'Shear Wall Spec #SW-12', 'Includes 15% waste factor for complex cuts on hip corners.')">🔨 Framing & Sheathing</div>
+      <div class="tree-item" onclick="showTakeoff('MEP: Whole House DWV Plumbing', '22 Drops', 'UPC Code Table 702.1', 'Configured for dual vent stack and 3-inch cleanouts at foundation perimeter.')">🚰 MEP / Plumbing</div>
+      <div class="tree-item" onclick="showTakeoff('Foundation: Stem Wall & Footing', '42 CU YDS', '3,000 PSI Mix w/ #4 Rebar', 'Continuous pour with seismic hold-downs placed per detail S-1.')">🧱 Foundation & Concrete</div>
+      <div class="tree-item" onclick="showInspectionLedger()">📋 Inspection Log (Geo-Ledger)</div>
+    </aside>
+
+    <!-- Center Workspace -->
+    <section class="viewport" id="workspace">
+      <!-- Site Map Dashboard (Default) -->
+      <div id="view-dashboard">
+        <h2 style="margin-bottom: 16px; font-size: 1.4rem;">Job Site Quick Navigation</h2>
+        <div class="grid-dashboard">
+          <div class="block-btn" onclick="showTakeoff('Framing: 2nd Floor Shear Walls', '1,450 SQ FT', 'Shear Wall Spec #SW-12', 'Includes 15% waste factor for complex cuts on hip corners.')">
+            <div class="block-title">🔨 Framing</div>
+            <div class="block-desc">Shear walls, floor joists, roof rafters & studs</div>
+          </div>
+          <div class="block-btn" onclick="showTakeoff('MEP: Whole House DWV Plumbing', '22 Drops', 'UPC Code Table 702.1', 'Configured for dual vent stack and 3-inch cleanouts at foundation perimeter.')">
+            <div class="block-title">🚰 Plumbing & MEP</div>
+            <div class="block-desc">DWV rough-ins, water supply runs & electrical drops</div>
+          </div>
+          <div class="block-btn" onclick="showTakeoff('Foundation: Stem Wall & Footing', '42 CU YDS', '3,000 PSI Mix w/ #4 Rebar', 'Continuous pour with seismic hold-downs placed per detail S-1.')">
+            <div class="block-title">🧱 Foundation</div>
+            <div class="block-desc">Footings, anchor bolts, rebar cages & stem walls</div>
+          </div>
+          <div class="block-btn" onclick="showInspectionLedger()">
+            <div class="block-title">📋 Inspector Ledger</div>
+            <div class="block-desc">Geo-tagged video proofs, date logs & trade briefs</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Takeoff Node View -->
+      <div id="view-takeoff" style="display: none;" class="node-container">
+        <div class="node-header">
+          <div>
+            <h3 id="node-title" style="font-size: 1.3rem;">Takeoff Node</h3>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Bluebeam Source: Sheet A2.1 Framing</span>
+          </div>
+          <button class="status-badge" onclick="copyGuestLink()" style="cursor: pointer; background: #334155; color: #fff;">🔗 Share Guest Link</button>
+        </div>
+
+        <div class="slice-mockup">
+          <div class="slice-annotation">CROPPED BLUEBEAM MARKUP SLICE</div>
+          <span style="margin-top: 50px;">[ Cropped Vector Blueprint Slice Rendered Here ]</span>
+        </div>
+
+        <div class="data-cards">
+          <div class="data-pill">
+            <div class="label">Calculated Quantity</div>
+            <div class="val" id="node-qty">0</div>
+          </div>
+          <div class="data-pill">
+            <div class="label">Specification</div>
+            <div class="val" id="node-spec" style="font-size: 1rem; color: #38bdf8;">Spec Info</div>
+          </div>
+        </div>
+
+        <div class="methodology-box">
+          <strong>Takeoff Methodology & Calculations:</strong>
+          <p id="node-methodology" style="margin-top: 6px; color: #cbd5e1;"></p>
+        </div>
+
+        <button class="btn-action" onclick="showDashboard()" style="background: var(--border); color: #fff; width: fit-content;">⬅ Return to Site Map</button>
+      </div>
+
+      <!-- Inspection & Compliance Geo-Ledger -->
+      <div id="view-inspection" style="display: none;" class="ledger-container">
+        <h3 style="font-size: 1.3rem; margin-bottom: 8px;">Inspection & Compliance Chronological Ledger</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">Immutable date-stamped records tied to GPS job coordinates.</p>
+        
+        <div class="capture-bar">
+          <button class="btn-action" onclick="addInspectorLog()">🎥 Quick Record Correction</button>
+        </div>
+
+        <div id="ledger-entries">
+          <div class="ledger-entry">
+            <div class="entry-header">
+              <span>📅 10_02_26_plumbing_corrections</span>
+              <span style="color: var(--success); font-weight: normal;">📍 GPS Pin: 38.1041° N, 122.2566° W</span>
+            </div>
+            <p><strong>Correction Note:</strong> Inspector noted sanitary tee installed on horizontal run in crawlspace; requires combo wye & 1/8 bend fitting prior to rough sign-off.</p>
+            
+            <div class="ai-brief">
+              <strong style="color: #60a5fa;">💡 AI Trade Translator Brief: Sanitary Tee vs Combo Wye</strong>
+              <p style="margin-top: 4px; color: #cbd5e1;">A sanitary tee is approved for vertical-to-horizontal drainage changes. On a continuous horizontal run, code requires a combination wye & 1/8 bend to reduce clogging risk.</p>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-action" onclick="showDashboard()" style="background: var(--border); color: #fff; width: fit-content; margin-top: 16px;">⬅ Return to Site Map</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function setNavBreadcrumb(name) {
+      document.getElementById('nav-location').innerText = name;
+    }
+
+    function hideAllViews() {
+      document.getElementById('view-dashboard').style.display = 'none';
+      document.getElementById('view-takeoff').style.display = 'none';
+      document.getElementById('view-inspection').style.display = 'none';
+    }
+
+    function showDashboard() {
+      hideAllViews();
+      document.getElementById('view-dashboard').style.display = 'block';
+      setNavBreadcrumb('Site Map');
+    }
+
+    function showTakeoff(title, qty, spec, methodology) {
+      hideAllViews();
+      document.getElementById('view-takeoff').style.display = 'block';
+      document.getElementById('node-title').innerText = title;
+      document.getElementById('node-qty').innerText = qty;
+      document.getElementById('node-spec').innerText = spec;
+      document.getElementById('node-methodology').innerText = methodology;
+      setNavBreadcrumb(title);
+    }
+
+    function showInspectionLedger() {
+      hideAllViews();
+      document.getElementById('view-inspection').style.display = 'block';
+      setNavBreadcrumb('Inspection Ledger');
+    }
+
+    function copyGuestLink() {
+      navigator.clipboard.writeText(window.location.href);
+      alert('Secure Guest Link copied! Subcontractors opening this link are isolated to this specific takeoff node.');
+    }
+
+    function addInspectorLog() {
+      const title = prompt("Enter Inspector Correction Title:", "framing_nail_spacing_correction");
+      if (!title) return;
+
+      const dateStr = "10_02_26";
+      const fullFileName = `${dateStr}_${title.replace(/\s+/g, '_')}`;
+
+      const entryHtml = `
+        <div class="ledger-entry">
+          <div class="entry-header">
+            <span>📅 ${fullFileName}</span>
+            <span style="color: var(--success); font-weight: normal;">📍 GPS Pin Captured</span>
+          </div>
+          <p><strong>Correction Note:</strong> Field recorded note captured directly via mobile interface.</p>
+          <div class="ai-brief">
+            <strong style="color: #60a5fa;">💡 AI Trade Translator Brief</strong>
+            <p style="margin-top: 4px; color: #cbd5e1;">Reviewing structural code specifications for compliance verification.</p>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('ledger-entries').insertAdjacentHTML('afterbegin', entryHtml);
+    }
+  </script>
+</body>
+</html>
