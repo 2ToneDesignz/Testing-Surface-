@@ -417,7 +417,7 @@
           <div class="ledger-entry">
             <div class="entry-header">
               <span>📅 10_02_26_plumbing_corrections</span>
-              <span style="color: var(--success); font-weight: normal;">📍 GPS Pin: 38.1041° N, 122.2566° W</span>
+              <a href="https://www.google.com/maps/search/?api=1&query=38.1041,-122.2566" target="_blank" rel="noopener" style="color: var(--success); font-weight: normal;">📍 GPS Pin: 38.1041° N, 122.2566° W</a>
             </div>
             <p><strong>Correction Note:</strong> Inspector noted sanitary tee installed on horizontal run in crawlspace; requires combo wye & 1/8 bend fitting prior to rough sign-off.</p>
             
@@ -471,6 +471,12 @@
       alert('Secure Guest Link copied! Subcontractors opening this link are isolated to this specific takeoff node.');
     }
 
+    function formatCoords(lat, lng) {
+      const ns = lat >= 0 ? 'N' : 'S';
+      const ew = lng >= 0 ? 'E' : 'W';
+      return `${Math.abs(lat).toFixed(5)}° ${ns}, ${Math.abs(lng).toFixed(5)}° ${ew}`;
+    }
+
     function addInspectorLog() {
       const title = prompt("Enter Inspector Correction Title:", "framing_nail_spacing_correction");
       if (!title) return;
@@ -478,21 +484,54 @@
       const dateStr = "10_02_26";
       const fullFileName = `${dateStr}_${title.replace(/\s+/g, '_')}`;
 
-      const entryHtml = `
-        <div class="ledger-entry">
+      const entry = document.createElement('div');
+      entry.className = 'ledger-entry';
+      entry.innerHTML = `
           <div class="entry-header">
-            <span>📅 ${fullFileName}</span>
-            <span style="color: var(--success); font-weight: normal;">📍 GPS Pin Captured</span>
+            <span class="entry-name"></span>
+            <span class="entry-pin" style="color: var(--text-muted); font-weight: normal;">📍 Getting location…</span>
           </div>
           <p><strong>Correction Note:</strong> Field recorded note captured directly via mobile interface.</p>
           <div class="ai-brief">
             <strong style="color: #60a5fa;">💡 AI Trade Translator Brief</strong>
             <p style="margin-top: 4px; color: #cbd5e1;">Reviewing structural code specifications for compliance verification.</p>
           </div>
-        </div>
       `;
+      entry.querySelector('.entry-name').textContent = `📅 ${fullFileName}`;
+      document.getElementById('ledger-entries').prepend(entry);
 
-      document.getElementById('ledger-entries').insertAdjacentHTML('afterbegin', entryHtml);
+      const pin = entry.querySelector('.entry-pin');
+
+      function pinFailed(reason) {
+        pin.style.color = 'var(--text-muted)';
+        pin.textContent = `📍 No location (${reason})`;
+      }
+
+      if (!('geolocation' in navigator)) {
+        pinFailed('this device does not share location');
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const link = document.createElement('a');
+          link.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.style.color = 'var(--success)';
+          link.style.fontWeight = 'normal';
+          link.textContent = `📍 GPS Pin: ${formatCoords(lat, lng)}`;
+          pin.replaceWith(link);
+        },
+        function (err) {
+          if (err.code === 1) pinFailed('permission was denied');
+          else if (err.code === 3) pinFailed('timed out');
+          else pinFailed('position unavailable');
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
     }
   </script>
 </body>
