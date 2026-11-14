@@ -6,15 +6,21 @@
   <title>Plan Set Design - Field Infrastructure</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --accent: #f59e0b;
-      --accent-hover: #d97706;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: #334155;
-      --danger: #ef4444;
-      --success: #10b981;
+      --bg: #f4f7f9;
+      --card-bg: #ffffff;
+      --accent: #3d6585;
+      --accent-hover: #2c4559;
+      --text: #14202b;
+      --text-soft: #34495b;
+      --text-muted: #5a6e7f;
+      --border: #c7d4de;
+      --danger: #b3372b;
+      --success: #1d7a52;
+      --steel: #617f96;
+      --tint: #e9eff4;
+      --btn-dark-top: #4f6f88;
+      --btn-dark-bot: #2c4559;
+      --btn-dark-edge: #1b2d3b;
     }
 
     * {
@@ -721,6 +727,207 @@
       color: var(--text-muted);
     }
 
+    /* ===== Light & bright theme (borrowed from plansetdesign.com) ===== */
+    body {
+      background:
+        radial-gradient(1100px 650px at 75% -10%, #ffffff 0%, rgba(255,255,255,0) 70%),
+        linear-gradient(180deg, #f8fafb 0%, #eaf0f4 100%) fixed;
+    }
+
+    header {
+      background: linear-gradient(180deg, #ffffff 0%, #eef3f6 100%);
+      border-bottom: 1px solid var(--border);
+      box-shadow: inset 0 1px 0 #fff, 0 4px 14px rgba(44,69,89,0.12);
+    }
+
+    /* Brand plate: pressed into the bar, steel-blue lettering */
+    .brand {
+      color: #2c4559;
+      background: linear-gradient(180deg, #dfe8ee 0%, #eef3f6 100%);
+      box-shadow:
+        inset 0 2px 5px rgba(44,69,89,0.28),
+        inset 0 -1px 0 rgba(255,255,255,0.9),
+        0 1px 0 #ffffff;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    .breadcrumbs span { color: var(--text); }
+
+    .status-badge {
+      background: #e6edf2;
+      color: var(--text-soft);
+      border: 1px solid #cfdbe4;
+      box-shadow: inset 0 2px 4px rgba(44,69,89,0.2), 0 1px 0 #fff;
+    }
+
+    aside {
+      background: linear-gradient(180deg, #ffffff 0%, #eef3f6 100%);
+      border-right: 1px solid var(--border);
+      box-shadow: inset -1px 0 0 #fff, 4px 0 14px rgba(44,69,89,0.08);
+    }
+
+    .nav-header {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 1.6px;
+      color: var(--steel);
+      border-bottom-color: #dbe5ec;
+    }
+
+    .tree-item {
+      border-bottom-color: #e3ebf1;
+      color: var(--text);
+    }
+
+    .tree-item:hover, .tree-item.active {
+      background: linear-gradient(90deg, #dde8f0 0%, #eef3f6 100%);
+      box-shadow: inset 0 1px 0 #fff, inset 0 -1px 0 rgba(44,69,89,0.08);
+      color: var(--accent);
+      border-left-color: var(--steel);
+    }
+
+    /* Blueprint grid behind the workspace */
+    .viewport {
+      background-image:
+        linear-gradient(rgba(97,127,150,0.13) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(97,127,150,0.13) 1px, transparent 1px),
+        linear-gradient(rgba(97,127,150,0.065) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(97,127,150,0.065) 1px, transparent 1px);
+    }
+
+    /* Raised white panels */
+    .block-btn, .node-container, .ledger-container, .gate-card {
+      background: linear-gradient(165deg, #ffffff 0%, #f1f5f8 100%);
+      border: 1px solid var(--border);
+      border-top-color: #ffffff;
+      border-bottom-color: #b9c9d6;
+      box-shadow:
+        inset 0 1px 0 #ffffff,
+        inset 0 -2px 0 rgba(44,69,89,0.05),
+        0 2px 0 #cbd7e0,
+        0 12px 24px rgba(44,69,89,0.13);
+    }
+
+    .block-btn:hover {
+      background: linear-gradient(165deg, #ffffff 0%, #e9f0f5 100%);
+      border-color: var(--steel);
+      box-shadow:
+        inset 0 1px 0 #ffffff,
+        inset 0 -2px 0 rgba(44,69,89,0.05),
+        0 2px 0 #b3c4d1,
+        0 18px 32px rgba(44,69,89,0.2),
+        0 0 0 3px rgba(97,127,150,0.14);
+    }
+
+    .block-btn:active {
+      box-shadow: inset 0 3px 8px rgba(44,69,89,0.22), 0 1px 0 #cbd7e0;
+    }
+
+    .block-title { text-shadow: none; color: var(--text); }
+    .block-desc { color: var(--text-muted); }
+
+    /* Recessed wells */
+    .data-pill, .ledger-entry, .methodology-box, .slice-mockup {
+      background: var(--tint);
+      color: var(--text);
+      box-shadow: inset 0 2px 6px rgba(44,69,89,0.17), 0 1px 0 #ffffff;
+    }
+
+    .data-pill, .ledger-entry { border-color: #d3dee7; }
+    .slice-mockup { border: 2px dashed #9fb5c5; }
+    .slice-mockup.drag-over { border-color: var(--steel); background: #dce8f1; }
+    .methodology-box { border-left-color: var(--steel); }
+
+    .data-pill .label {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      letter-spacing: 0.8px;
+      color: var(--steel);
+    }
+
+    .data-pill .val { color: var(--accent); }
+    .entry-header { color: var(--accent); }
+
+    .ai-brief {
+      background: linear-gradient(180deg, #f2f8fc 0%, #e4eff7 100%);
+      border: 1px solid #9ec3dd;
+      box-shadow: inset 0 1px 0 #fff, 0 4px 12px rgba(44,69,89,0.1);
+    }
+
+    /* Dark, beveled buttons that press in */
+    .btn-action {
+      background: linear-gradient(180deg, var(--btn-dark-top) 0%, var(--btn-dark-bot) 100%);
+      color: #ffffff;
+      text-shadow: 0 -1px 0 rgba(0,0,0,0.35);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.28),
+        inset 0 -2px 0 rgba(0,0,0,0.22),
+        0 3px 0 var(--btn-dark-edge),
+        0 8px 16px rgba(44,69,89,0.3);
+    }
+
+    .btn-action:hover { background: linear-gradient(180deg, #5a7c96 0%, #34506a 100%); filter: none; }
+
+    .btn-action:active {
+      transform: translateY(3px);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.4), 0 0 0 var(--btn-dark-edge), 0 2px 4px rgba(44,69,89,0.3);
+    }
+
+    /* Light "Return" / "Sign out" buttons, like the site's outline buttons */
+    .btn-action.btn-secondary {
+      background: linear-gradient(180deg, #ffffff 0%, #e9f0f5 100%);
+      color: var(--text);
+      text-shadow: 0 1px 0 #fff;
+      border: 1px solid var(--border);
+      box-shadow:
+        inset 0 1px 0 #ffffff,
+        inset 0 -2px 0 rgba(44,69,89,0.08),
+        0 3px 0 #b3c4d1,
+        0 8px 16px rgba(44,69,89,0.14);
+    }
+
+    .btn-action.btn-secondary:hover { background: linear-gradient(180deg, #ffffff 0%, #dfe9f0 100%); }
+
+    .btn-action.btn-secondary:active {
+      box-shadow: inset 0 2px 5px rgba(44,69,89,0.25), 0 2px 4px rgba(44,69,89,0.15);
+    }
+
+    button.status-badge.share-btn {
+      background: linear-gradient(180deg, var(--btn-dark-top) 0%, var(--btn-dark-bot) 100%);
+      color: #fff;
+      border: 1px solid var(--btn-dark-edge);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -2px 0 rgba(0,0,0,0.22), 0 2px 0 var(--btn-dark-edge), 0 6px 12px rgba(44,69,89,0.3);
+    }
+
+    .clip-item {
+      background: #ffffff;
+      border: 1px solid #cfdbe4;
+      box-shadow: inset 0 1px 0 #fff, 0 6px 14px rgba(44,69,89,0.18);
+    }
+
+    .clip-remove { background: rgba(255,255,255,0.95); color: var(--text); border: 1px solid #9fb5c5; box-shadow: 0 2px 6px rgba(44,69,89,0.3); }
+    .clip-remove:hover { color: #fff; }
+
+    .clip-lightbox { background: rgba(20,32,43,0.88); }
+
+    /* Sign-in screen */
+    .gate { background: linear-gradient(180deg, #f8fafb 0%, #e6edf2 100%); }
+    .gate-card p, .gate-msg { color: var(--text-soft); }
+    .gate-error { color: var(--danger); }
+    .gate-card label { color: var(--text-muted); }
+
+    .gate-card input {
+      color: var(--text);
+      background: #eef3f6;
+      border: 1px solid #c7d4de;
+      box-shadow: inset 0 2px 6px rgba(44,69,89,0.17), 0 1px 0 #fff;
+    }
+
+    .gate-card input:focus-visible { outline: 2px solid var(--steel); }
+    .gate-card .btn-action:disabled { filter: grayscale(0.4) brightness(1.15); }
+
+    .signout-link { color: var(--text-muted); }
+    .signout-link:hover { color: var(--text); }
+
     /* Screens ease in when you switch */
     #view-dashboard, #view-takeoff, #view-inspection {
       animation: view-rise 0.22s ease-out;
@@ -786,7 +993,7 @@
         <p id="gate-blocked-text"></p>
         <div class="gate-actions">
           <button class="btn-action" type="button" onclick="recheckSession()">Check again</button>
-          <button class="btn-action" type="button" onclick="signOut()" style="background: var(--border); color: #fff;">Sign out</button>
+          <button class="btn-action btn-secondary" type="button" onclick="signOut()">Sign out</button>
         </div>
       </div>
 
@@ -852,7 +1059,7 @@
             <h3 id="node-title" style="font-size: 1.3rem;">Takeoff Node</h3>
             <span style="font-size: 0.8rem; color: var(--text-muted);">Bluebeam Source: Sheet A2.1 Framing</span>
           </div>
-          <button class="status-badge" onclick="copyGuestLink()" style="cursor: pointer; background: #334155; color: #fff;">🔗 Share Guest Link</button>
+          <button class="status-badge share-btn" onclick="copyGuestLink()" style="cursor: pointer;">🔗 Share Guest Link</button>
         </div>
 
         <div class="slice-mockup" id="clip-zone">
@@ -873,16 +1080,16 @@
           </div>
           <div class="data-pill">
             <div class="label">Specification</div>
-            <div class="val" id="node-spec" style="font-size: 1rem; color: #38bdf8;">Spec Info</div>
+            <div class="val" id="node-spec" style="font-size: 1rem; color: #2f6f96;">Spec Info</div>
           </div>
         </div>
 
         <div class="methodology-box">
           <strong>Takeoff Methodology & Calculations:</strong>
-          <p id="node-methodology" style="margin-top: 6px; color: #cbd5e1;"></p>
+          <p id="node-methodology" style="margin-top: 6px; color: var(--text-soft);"></p>
         </div>
 
-        <button class="btn-action" onclick="showDashboard()" style="background: var(--border); color: #fff; width: fit-content;">⬅ Return to Site Map</button>
+        <button class="btn-action btn-secondary" onclick="showDashboard()" style="width: fit-content;">⬅ Return to Site Map</button>
       </div>
 
       <!-- Inspection & Compliance Geo-Ledger -->
@@ -906,13 +1113,13 @@
             <p><strong>Correction Note:</strong> Inspector noted sanitary tee installed on horizontal run in crawlspace; requires combo wye & 1/8 bend fitting prior to rough sign-off.</p>
             
             <div class="ai-brief">
-              <strong style="color: #60a5fa;">💡 AI Trade Translator Brief: Sanitary Tee vs Combo Wye</strong>
-              <p style="margin-top: 4px; color: #cbd5e1;">A sanitary tee is approved for vertical-to-horizontal drainage changes. On a continuous horizontal run, code requires a combination wye & 1/8 bend to reduce clogging risk.</p>
+              <strong style="color: #2f6f96;">💡 AI Trade Translator Brief: Sanitary Tee vs Combo Wye</strong>
+              <p style="margin-top: 4px; color: var(--text-soft);">A sanitary tee is approved for vertical-to-horizontal drainage changes. On a continuous horizontal run, code requires a combination wye & 1/8 bend to reduce clogging risk.</p>
             </div>
           </div>
         </div>
 
-        <button class="btn-action" onclick="showDashboard()" style="background: var(--border); color: #fff; width: fit-content; margin-top: 16px;">⬅ Return to Site Map</button>
+        <button class="btn-action btn-secondary" onclick="showDashboard()" style="width: fit-content; margin-top: 16px;">⬅ Return to Site Map</button>
       </div>
     </section>
   </main>
@@ -1151,8 +1358,8 @@
           </div>
           <p><strong>Correction Note:</strong> <span class="entry-note"></span></p>
           <div class="ai-brief">
-            <strong style="color: #60a5fa;">💡 AI Trade Translator Brief</strong>
-            <p style="margin-top: 4px; color: #cbd5e1;">Reviewing structural code specifications for compliance verification.</p>
+            <strong style="color: #2f6f96;">💡 AI Trade Translator Brief</strong>
+            <p style="margin-top: 4px; color: var(--text-soft);">Reviewing structural code specifications for compliance verification.</p>
           </div>
       `;
       entry.querySelector('.entry-name').textContent = '📅 ' + nameText;
