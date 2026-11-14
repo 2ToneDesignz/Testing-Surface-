@@ -586,6 +586,141 @@
       box-shadow: 0 20px 60px rgba(0,0,0,0.8);
     }
 
+    /* Crew sign-in screen */
+    [hidden] {
+      display: none !important;
+    }
+
+    .gate {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      overflow-y: auto;
+      background: radial-gradient(1200px 700px at 70% -10%, #1b2a47 0%, var(--bg) 60%);
+    }
+
+    .gate.open-app {
+      display: none;
+    }
+
+    .gate-card {
+      width: 100%;
+      max-width: 380px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: linear-gradient(160deg, #2a3952 0%, #1a2436 100%);
+      border: 1px solid #36455e;
+      border-top-color: #56688a;
+      border-bottom-color: #0a0f1c;
+      border-radius: 16px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        inset 0 -2px 0 rgba(0,0,0,0.35),
+        0 2px 0 #080c16,
+        0 18px 40px rgba(0,0,0,0.6);
+    }
+
+    .gate-card .brand {
+      align-self: flex-start;
+      margin-bottom: 4px;
+    }
+
+    .gate-card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 4px;
+    }
+
+    .gate-card form, #gate-blocked {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .gate-card label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .gate-card input {
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+      color: var(--text);
+      background: #0a1120;
+      border: 1px solid #05080f;
+      border-radius: 10px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.07);
+    }
+
+    .gate-card input:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    .gate-card .btn-action {
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .gate-card .btn-action:disabled {
+      filter: grayscale(0.6) brightness(0.8);
+      cursor: default;
+    }
+
+    .gate-card p, .gate-msg {
+      font-size: 0.9rem;
+      line-height: 1.45;
+      color: #cbd5e1;
+    }
+
+    .gate-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .gate-error {
+      font-size: 0.85rem;
+      color: #fca5a5;
+      min-height: 1.2em;
+    }
+
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .signout-link {
+      background: none;
+      border: none;
+      padding: 2px 4px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .signout-link:hover {
+      color: var(--text);
+    }
+
+    .clip-missing {
+      padding: 28px 12px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
     /* Screens ease in when you switch */
     #view-dashboard, #view-takeoff, #view-inspection {
       animation: view-rise 0.22s ease-out;
@@ -630,6 +765,35 @@
 </head>
 <body>
 
+  <!-- Crew sign-in screen: covers the app until a crew member is signed in -->
+  <div class="gate" id="gate">
+    <div class="gate-card">
+      <div class="brand">📐 PLAN SET DESIGN</div>
+
+      <div class="gate-msg" id="gate-loading">Checking sign-in…</div>
+
+      <form id="gate-form" hidden>
+        <h2>Crew sign in</h2>
+        <label for="gate-email">Email</label>
+        <input id="gate-email" name="email" type="email" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+        <label for="gate-password">Password</label>
+        <input id="gate-password" name="password" type="password" autocomplete="current-password" required>
+        <button class="btn-action" id="gate-submit" type="submit">Sign in</button>
+      </form>
+
+      <div id="gate-blocked" hidden>
+        <h2 id="gate-blocked-title"></h2>
+        <p id="gate-blocked-text"></p>
+        <div class="gate-actions">
+          <button class="btn-action" type="button" onclick="recheckSession()">Check again</button>
+          <button class="btn-action" type="button" onclick="signOut()" style="background: var(--border); color: #fff;">Sign out</button>
+        </div>
+      </div>
+
+      <div class="gate-error" id="gate-error" role="alert"></div>
+    </div>
+  </div>
+
   <!-- Header & Breadcrumbs -->
   <header>
     <div>
@@ -638,7 +802,10 @@
         Active: <span id="current-project">Job #40 Andersen</span> &gt; <span id="nav-location">Site Map</span>
       </div>
     </div>
-    <div class="status-badge" id="role-tag">GC Admin (Full Control)</div>
+    <div class="header-right">
+      <div class="status-badge" id="role-tag">GC Admin (Full Control)</div>
+      <button type="button" class="signout-link" onclick="signOut()">Sign out</button>
+    </div>
   </header>
 
   <!-- Main View -->
@@ -727,6 +894,9 @@
           <button class="btn-action" onclick="addInspectorLog()">🎥 Quick Record Correction</button>
         </div>
 
+        <div class="clip-status" id="ledger-status" role="status"></div>
+        <div id="ledger-saved"></div>
+
         <div id="ledger-entries">
           <div class="ledger-entry">
             <div class="entry-header">
@@ -751,6 +921,9 @@
   <div class="clip-lightbox" id="clip-lightbox" onclick="closeClipViewer()">
     <img id="clip-lightbox-img" alt="Clip, full size">
   </div>
+
+  <!-- Supabase browser library v2.119.0 (MIT), kept in this repo so the app does not depend on an outside CDN -->
+  <script src="vendor/supabase.js"></script>
 
   <script>
     function setNavBreadcrumb(name) {
@@ -799,81 +972,430 @@
       return `${Math.abs(lat).toFixed(5)}° ${ns}, ${Math.abs(lng).toFixed(5)}° ${ew}`;
     }
 
-    function addInspectorLog() {
-      const title = prompt("Enter Inspector Correction Title:", "framing_nail_spacing_correction");
-      if (!title) return;
+    /* ---------- Shared online storage (Supabase) ---------- */
+    // These two values are safe to publish. Access is controlled by the sign-in and the crew list on the server.
+    const SUPABASE_URL = 'https://snrdwzkwcvzlotqnscil.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_3qASDrh1wM2R17nXM4O3-g_1VaJHRdJ';
+    const CLIP_BUCKET = 'clips';
+    const MAX_CLIP_BYTES = 15 * 1024 * 1024;
 
-      const dateStr = "10_02_26";
-      const fullFileName = `${dateStr}_${title.replace(/\s+/g, '_')}`;
+    const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
+    let signedInUserId = null;   // set only after the server confirms this account is on the crew list
+    let lastSession = null;
+    let gateSeq = 0;
+    let currentPhase = null;
+    let clipUrlById = {};
+    let localClipsMoved = false;
+
+    /* ---------- Sign-in screen ---------- */
+    function showGate(state) {
+      document.getElementById('gate').classList.remove('open-app');
+      document.getElementById('gate-loading').hidden = state !== 'loading';
+      document.getElementById('gate-form').hidden = state !== 'form';
+      document.getElementById('gate-blocked').hidden = state !== 'blocked';
+      if (state !== 'form') setGateError('');
+    }
+
+    function hideGate() {
+      setGateError('');
+      document.getElementById('gate').classList.add('open-app');
+    }
+
+    function setGateError(msg) {
+      document.getElementById('gate-error').textContent = msg;
+    }
+
+    function showBlocked(title, text) {
+      document.getElementById('gate-blocked-title').textContent = title;
+      document.getElementById('gate-blocked-text').textContent = text;
+      showGate('blocked');
+    }
+
+    function clearAppData() {
+      document.getElementById('clip-grid').textContent = '';
+      document.getElementById('clip-empty').style.display = 'flex';
+      document.getElementById('ledger-saved').textContent = '';
+      setClipStatus('');
+      setLedgerStatus('');
+      clipUrlById = {};
+      closeClipViewer();
+    }
+
+    async function applySession(session) {
+      const seq = ++gateSeq;
+      lastSession = session;
+
+      if (!session) {
+        signedInUserId = null;
+        clearAppData();
+        showGate('form');
+        return;
+      }
+
+      const uid = session.user.id;
+      if (signedInUserId === uid) return;   // already in; this was only a routine token refresh
+
+      signedInUserId = null;
+      showGate('loading');
+
+      let result;
+      try {
+        result = await sb.rpc('am_i_crew');
+      } catch (e) {
+        result = { data: null, error: e };
+      }
+      if (seq !== gateSeq) return;          // a newer sign-in or sign-out happened while we waited
+
+      if (result.error) {
+        showBlocked('Cannot reach the server', 'Check your connection, then tap Check again.');
+        return;
+      }
+      if (result.data !== true) {
+        showBlocked('Not on the crew list',
+          (session.user.email || 'This account') + ' is signed in, but it has not been added to the crew yet. Ask the job admin to add it, then tap Check again.');
+        return;
+      }
+
+      signedInUserId = uid;
+      hideGate();
+      loadLedger();
+      await moveLocalClipsToShared();
+      if (currentPhase) renderClips();
+    }
+
+    function recheckSession() {
+      applySession(lastSession);
+    }
+
+    async function signOut() {
+      if (!sb) return;
+      let res;
+      try {
+        res = await sb.auth.signOut();
+      } catch (e) {
+        res = { error: e };
+      }
+      if (res && res.error) {
+        // Could not reach the server: still sign this device out.
+        try { await sb.auth.signOut({ scope: 'local' }); } catch (e) { /* nothing more to do */ }
+      }
+    }
+
+    (function wireSignIn() {
+      if (!sb) {
+        document.getElementById('gate-loading').textContent = 'The app did not finish loading. Refresh the page.';
+        return;
+      }
+
+      const form = document.getElementById('gate-form');
+      const submit = document.getElementById('gate-submit');
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const email = document.getElementById('gate-email').value.trim();
+        const passwordField = document.getElementById('gate-password');
+        if (!email || !passwordField.value) return;
+
+        setGateError('');
+        submit.disabled = true;
+        submit.textContent = 'Signing in…';
+
+        let res;
+        try {
+          res = await sb.auth.signInWithPassword({ email: email, password: passwordField.value });
+        } catch (err) {
+          res = { error: err };
+        }
+        passwordField.value = '';
+        submit.disabled = false;
+        submit.textContent = 'Sign in';
+
+        if (res.error) {
+          const msg = String(res.error.message || '');
+          if (/invalid login credentials/i.test(msg)) setGateError('Wrong email or password.');
+          else if (/not confirmed/i.test(msg)) setGateError('This account\'s email has not been confirmed yet.');
+          else if (res.error.status === 429) setGateError('Too many tries. Wait a minute, then try again.');
+          else setGateError('Could not sign in. Check your connection and try again.');
+          passwordField.focus();
+        }
+        // On success the sign-in listener below opens the app.
+      });
+
+      // Fires once on page load with the saved sign-in (or none), and again on every sign-in or sign-out.
+      sb.auth.onAuthStateChange(function (event, session) {
+        setTimeout(function () { applySession(session); }, 0);
+      });
+    })();
+
+    /* ---------- Inspection ledger: shared, add-only ---------- */
+    function setLedgerStatus(msg, isError) {
+      const el = document.getElementById('ledger-status');
+      el.textContent = msg;
+      el.style.color = isError ? 'var(--danger)' : 'var(--text-muted)';
+    }
+
+    function ledgerDate(iso) {
+      const d = new Date(iso);
+      const two = function (n) { return String(n).padStart(2, '0'); };
+      return two(d.getMonth() + 1) + '_' + two(d.getDate()) + '_' + two(d.getFullYear() % 100);
+    }
+
+    function buildLedgerEntry(nameText) {
       const entry = document.createElement('div');
       entry.className = 'ledger-entry';
       entry.innerHTML = `
           <div class="entry-header">
             <span class="entry-name"></span>
-            <span class="entry-pin" style="color: var(--text-muted); font-weight: normal;">📍 Getting location…</span>
+            <span class="entry-pin" style="color: var(--text-muted); font-weight: normal;"></span>
           </div>
-          <p><strong>Correction Note:</strong> Field recorded note captured directly via mobile interface.</p>
+          <p><strong>Correction Note:</strong> <span class="entry-note"></span></p>
           <div class="ai-brief">
             <strong style="color: #60a5fa;">💡 AI Trade Translator Brief</strong>
             <p style="margin-top: 4px; color: #cbd5e1;">Reviewing structural code specifications for compliance verification.</p>
           </div>
       `;
-      entry.querySelector('.entry-name').textContent = `📅 ${fullFileName}`;
-      document.getElementById('ledger-entries').prepend(entry);
-
-      const pin = entry.querySelector('.entry-pin');
-
-      function pinFailed(reason) {
-        pin.style.color = 'var(--text-muted)';
-        pin.textContent = `📍 No location (${reason})`;
-      }
-
-      if (!('geolocation' in navigator)) {
-        pinFailed('this device does not share location');
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        function (pos) {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          const link = document.createElement('a');
-          link.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-          link.target = '_blank';
-          link.rel = 'noopener';
-          link.style.color = 'var(--success)';
-          link.style.fontWeight = 'normal';
-          link.textContent = `📍 GPS Pin: ${formatCoords(lat, lng)}`;
-          pin.replaceWith(link);
-        },
-        function (err) {
-          if (err.code === 1) pinFailed('permission was denied');
-          else if (err.code === 3) pinFailed('timed out');
-          else pinFailed('position unavailable');
-        },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-      );
+      entry.querySelector('.entry-name').textContent = '📅 ' + nameText;
+      entry.querySelector('.entry-note').textContent = 'Field recorded note captured directly via mobile interface.';
+      return entry;
     }
 
-    /* ---------- Plan clips: saved on this device, one set per phase ---------- */
-    let currentPhase = null;
-    let clipDb = null;
-    let clipDbTried = false;
-    let memoryClips = [];      // used only if this browser will not let us save
-    let memoryClipId = 0;
-    let clipUrls = [];
+    function setEntryPin(entry, row) {
+      const pin = entry.querySelector('.entry-pin');
+      if (typeof row.lat === 'number' && typeof row.lng === 'number') {
+        const link = document.createElement('a');
+        link.href = `https://www.google.com/maps/search/?api=1&query=${row.lat},${row.lng}`;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.style.color = 'var(--success)';
+        link.style.fontWeight = 'normal';
+        link.textContent = '📍 GPS Pin: ' + formatCoords(row.lat, row.lng);
+        pin.replaceWith(link);
+      } else {
+        pin.textContent = '📍 No location (' + (row.location_status || 'not recorded') + ')';
+      }
+    }
 
+    async function loadLedger() {
+      if (!signedInUserId) return;
+      const uid = signedInUserId;
+      let res;
+      try {
+        res = await sb.from('ledger_entries')
+          .select('id, title, note, lat, lng, location_status, created_at')
+          .order('created_at', { ascending: false })
+          .limit(200);
+      } catch (e) {
+        res = { error: e };
+      }
+      if (uid !== signedInUserId) return;
+      if (res.error) {
+        setLedgerStatus('Could not load saved entries. Check your connection.', true);
+        return;
+      }
+      const box = document.getElementById('ledger-saved');
+      box.textContent = '';
+      (res.data || []).forEach(function (row) {
+        const entry = buildLedgerEntry(ledgerDate(row.created_at) + '_' + String(row.title).replace(/\s+/g, '_'));
+        if (row.note) entry.querySelector('.entry-note').textContent = row.note;
+        setEntryPin(entry, row);
+        box.appendChild(entry);
+      });
+    }
+
+    function getLocation() {
+      return new Promise(function (resolve) {
+        if (!('geolocation' in navigator)) {
+          return resolve({ reason: 'this device does not share location' });
+        }
+        navigator.geolocation.getCurrentPosition(
+          function (pos) { resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }); },
+          function (err) {
+            if (err.code === 1) resolve({ reason: 'permission was denied' });
+            else if (err.code === 3) resolve({ reason: 'timed out' });
+            else resolve({ reason: 'position unavailable' });
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
+      });
+    }
+
+    async function addInspectorLog() {
+      if (!signedInUserId) return;
+      const typed = prompt("Enter Inspector Correction Title:", "framing_nail_spacing_correction");
+      const title = (typed || '').trim().slice(0, 200);
+      if (!title) return;
+
+      setLedgerStatus('');
+      const pending = buildLedgerEntry(ledgerDate(new Date().toISOString()) + '_' + title.replace(/\s+/g, '_'));
+      const pin = pending.querySelector('.entry-pin');
+      pin.textContent = '📍 Getting location…';
+      document.getElementById('ledger-saved').prepend(pending);
+
+      const loc = await getLocation();
+      pin.textContent = '💾 Saving…';
+
+      const row = { title: title };
+      if (typeof loc.lat === 'number') { row.lat = loc.lat; row.lng = loc.lng; }
+      else { row.location_status = loc.reason; }
+
+      let res;
+      try {
+        res = await sb.from('ledger_entries').insert(row);
+      } catch (e) {
+        res = { error: e };
+      }
+      if (res.error) {
+        pending.remove();
+        setLedgerStatus('Could not save "' + title + '". Check your connection and try again.', true);
+        return;
+      }
+      setLedgerStatus('Entry saved and shared with the crew.');
+      await loadLedger();
+    }
+
+    /* ---------- Plan clips: shared with the crew, one set per phase ---------- */
     function setClipStatus(msg, isError) {
       const el = document.getElementById('clip-status');
       el.textContent = msg;
       el.style.color = isError ? 'var(--danger)' : 'var(--text-muted)';
     }
 
-    function openClipDb() {
+    function clipFilePath(phase, mimeType) {
+      const folder = String(phase).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'phase';
+      const ext = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif', 'image/heic': 'heic', 'image/heif': 'heif', 'image/bmp': 'bmp' }[mimeType] || 'img';
+      const id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2));
+      return folder + '/' + id + '.' + ext;
+    }
+
+    // Uploads the image, then records it. Throws if either step fails.
+    async function uploadClip(phase, blob, name) {
+      const path = clipFilePath(phase, blob.type);
+      const up = await sb.storage.from(CLIP_BUCKET).upload(path, blob, { contentType: blob.type, cacheControl: '3600', upsert: false });
+      if (up.error) throw up.error;
+      const ins = await sb.from('clips').insert({ phase: phase, path: path, name: String(name || 'clip').slice(0, 300) });
+      if (ins.error) {
+        try { await sb.storage.from(CLIP_BUCKET).remove([path]); } catch (e) { /* leave the stray file */ }
+        throw ins.error;
+      }
+    }
+
+    async function fetchClips(phase) {
+      const rows = await sb.from('clips')
+        .select('id, path, name, created_at')
+        .eq('phase', phase)
+        .order('created_at', { ascending: true });
+      if (rows.error) throw rows.error;
+      const clips = rows.data || [];
+      if (!clips.length) return [];
+
+      const signed = await sb.storage.from(CLIP_BUCKET).createSignedUrls(clips.map(function (c) { return c.path; }), 3600);
+      if (signed.error) throw signed.error;
+      const urlByPath = {};
+      (signed.data || []).forEach(function (item) { if (item && item.signedUrl) urlByPath[item.path] = item.signedUrl; });
+      return clips.map(function (c) { return { id: c.id, path: c.path, name: c.name, url: urlByPath[c.path] || null }; });
+    }
+
+    async function renderClips() {
+      const phase = currentPhase;
+      if (!phase || !signedInUserId) return;
+      let clips;
+      try {
+        clips = await fetchClips(phase);
+      } catch (e) {
+        if (phase === currentPhase) setClipStatus('Could not load clips. Check your connection.', true);
+        return;
+      }
+      if (phase !== currentPhase || !signedInUserId) return;   // switched screens or signed out while loading
+
+      const grid = document.getElementById('clip-grid');
+      grid.textContent = '';
+      clipUrlById = {};
+      clips.forEach(function (clip, i) {
+        const item = document.createElement('div');
+        item.className = 'clip-item';
+
+        if (clip.url) {
+          clipUrlById[clip.id] = clip.url;
+          const img = document.createElement('img');
+          img.src = clip.url;
+          img.alt = 'Plan clip ' + (i + 1) + ' for ' + phase;
+          img.onclick = function () { openClipViewer(clip.url); };
+          item.appendChild(img);
+        } else {
+          const missing = document.createElement('div');
+          missing.className = 'clip-missing';
+          missing.textContent = 'This clip\'s image could not be loaded.';
+          item.appendChild(missing);
+        }
+
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'clip-remove';
+        del.textContent = '✕';
+        del.title = 'Remove this clip';
+        del.setAttribute('aria-label', 'Remove clip ' + (i + 1));
+        del.onclick = function () { removeClip(clip); };
+        item.appendChild(del);
+
+        grid.appendChild(item);
+      });
+
+      document.getElementById('clip-empty').style.display = clips.length ? 'none' : 'flex';
+    }
+
+    async function removeClip(clip) {
+      if (!confirm('Remove this clip for the whole crew?')) return;
+      let res;
+      try {
+        res = await sb.from('clips').delete().eq('id', clip.id).select('id');
+      } catch (e) {
+        res = { error: e };
+      }
+      if (res.error || !res.data || !res.data.length) {
+        setClipStatus('Could not remove the clip. Check your connection and try again.', true);
+        return;
+      }
+      try { await sb.storage.from(CLIP_BUCKET).remove([clip.path]); } catch (e) { /* record is gone; a stray file is harmless */ }
+      setClipStatus('Clip removed.');
+      renderClips();
+    }
+
+    async function addClipFiles(fileList) {
+      if (!currentPhase || !signedInUserId) return;
+      const phase = currentPhase;
+      const all = Array.from(fileList || []);
+      const images = all.filter(function (f) { return f.type && f.type.indexOf('image/') === 0; });
+      if (!images.length) {
+        setClipStatus('That is not an image. Use a PNG or JPG.', true);
+        return;
+      }
+      const sized = images.filter(function (f) { return f.size <= MAX_CLIP_BYTES; });
+      const tooBig = images.length - sized.length;
+
+      let saved = 0;
+      let failed = 0;
+      if (sized.length) setClipStatus('Uploading…');
+      for (const f of sized) {
+        try {
+          await uploadClip(phase, f, f.name);
+          saved++;
+        } catch (e) {
+          failed++;
+        }
+      }
+
+      const parts = [];
+      if (saved) parts.push((saved === 1 ? '1 clip added.' : saved + ' clips added.') + ' Shared with the crew.');
+      if (failed) parts.push((failed === 1 ? '1 clip' : failed + ' clips') + ' could not be saved. Check your connection and try again.');
+      if (tooBig) parts.push(tooBig === 1 ? '1 image is over 15 MB and was skipped.' : tooBig + ' images are over 15 MB and were skipped.');
+      setClipStatus(parts.join(' '), failed > 0 || tooBig > 0);
+      if (saved) renderClips();
+    }
+
+    // One-time move: clips saved on this device before shared storage existed go up to the crew's storage.
+    function openLocalClipDb() {
       return new Promise(function (resolve) {
-        if (clipDb || clipDbTried) return resolve(clipDb);
-        clipDbTried = true;
         let req;
         try {
           req = indexedDB.open('psd-clips', 1);
@@ -884,7 +1406,7 @@
           const store = req.result.createObjectStore('clips', { keyPath: 'id', autoIncrement: true });
           store.createIndex('phase', 'phase');
         };
-        req.onsuccess = function () { clipDb = req.result; resolve(clipDb); };
+        req.onsuccess = function () { resolve(req.result); };
         req.onerror = function () { resolve(null); };
         req.onblocked = function () { resolve(null); };
       });
@@ -897,100 +1419,25 @@
       });
     }
 
-    async function getClips(phase) {
-      const db = await openClipDb();
-      if (!db) return memoryClips.filter(function (c) { return c.phase === phase; });
-      return idbDone(db.transaction('clips').objectStore('clips').index('phase').getAll(phase));
-    }
-
-    // Returns true if the clip was saved to this device, false if it is only held until the page closes
-    async function saveClip(phase, file) {
-      const record = { phase: phase, blob: file, name: file.name || 'clip', added: Date.now() };
-      const db = await openClipDb();
-      if (db) {
-        try {
-          await idbDone(db.transaction('clips', 'readwrite').objectStore('clips').add(record));
-          return true;
-        } catch (e) { /* fall through to memory */ }
-      }
-      record.id = 'm' + (++memoryClipId);
-      memoryClips.push(record);
-      return false;
-    }
-
-    async function removeClip(id) {
-      if (!confirm('Remove this clip?')) return;
-      if (typeof id === 'string') {
-        memoryClips = memoryClips.filter(function (c) { return c.id !== id; });
-      } else {
-        const db = await openClipDb();
-        if (db) await idbDone(db.transaction('clips', 'readwrite').objectStore('clips').delete(id));
-      }
-      setClipStatus('Clip removed.');
-      renderClips();
-    }
-
-    async function renderClips() {
-      const phase = currentPhase;
-      if (!phase) return;
-      let clips = [];
+    async function moveLocalClipsToShared() {
+      if (localClipsMoved || !signedInUserId) return;
+      localClipsMoved = true;
+      let moved = 0;
       try {
-        clips = await getClips(phase);
-      } catch (e) {
-        setClipStatus('Could not read saved clips on this device.', true);
-      }
-      if (phase !== currentPhase) return;   // switched screens while loading
-
-      clipUrls.forEach(function (u) { URL.revokeObjectURL(u); });
-      clipUrls = [];
-
-      const grid = document.getElementById('clip-grid');
-      grid.textContent = '';
-      clips.forEach(function (clip, i) {
-        const url = URL.createObjectURL(clip.blob);
-        clipUrls.push(url);
-
-        const item = document.createElement('div');
-        item.className = 'clip-item';
-
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = 'Plan clip ' + (i + 1) + ' for ' + phase;
-        img.onclick = function () { openClipViewer(url); };
-
-        const del = document.createElement('button');
-        del.type = 'button';
-        del.className = 'clip-remove';
-        del.textContent = '✕';
-        del.title = 'Remove this clip';
-        del.setAttribute('aria-label', 'Remove clip ' + (i + 1));
-        del.onclick = function () { removeClip(clip.id); };
-
-        item.appendChild(img);
-        item.appendChild(del);
-        grid.appendChild(item);
-      });
-
-      document.getElementById('clip-empty').style.display = clips.length ? 'none' : 'flex';
-    }
-
-    async function addClipFiles(fileList) {
-      if (!currentPhase) return;
-      const phase = currentPhase;
-      const all = Array.from(fileList || []);
-      const images = all.filter(function (f) { return f.type && f.type.indexOf('image/') === 0; });
-      if (!images.length) {
-        setClipStatus('That is not an image. Use a PNG or JPG.', true);
-        return;
-      }
-      let allSaved = true;
-      for (const f of images) {
-        if (!(await saveClip(phase, f))) allSaved = false;
-      }
-      const count = images.length === 1 ? '1 clip added.' : images.length + ' clips added.';
-      if (allSaved) setClipStatus(count + ' Saved on this device.');
-      else setClipStatus(count + ' This browser would not save it, so it will be gone when you close the page.', true);
-      renderClips();
+        const db = await openLocalClipDb();
+        if (!db) return;
+        const records = await idbDone(db.transaction('clips').objectStore('clips').getAll());
+        for (const rec of records) {
+          if (!rec || !rec.blob || !rec.phase) continue;
+          try {
+            await uploadClip(rec.phase, rec.blob, rec.name);
+            await idbDone(db.transaction('clips', 'readwrite').objectStore('clips').delete(rec.id));
+            moved++;
+          } catch (e) { /* leave it on this device; it will be tried again next time */ }
+        }
+        db.close();
+      } catch (e) { /* nothing saved locally, or this browser blocks local storage */ }
+      if (moved) setClipStatus((moved === 1 ? '1 clip' : moved + ' clips') + ' saved on this device earlier ' + (moved === 1 ? 'is' : 'are') + ' now shared with the crew.');
     }
 
     function takeoffIsOpen() {
@@ -1004,6 +1451,7 @@
 
     function closeClipViewer() {
       document.getElementById('clip-lightbox').classList.remove('open');
+      document.getElementById('clip-lightbox-img').removeAttribute('src');
     }
 
     (function wireClipBox() {
@@ -1017,7 +1465,7 @@
 
       // Ctrl+V anywhere while a takeoff screen is open
       document.addEventListener('paste', function (e) {
-        if (!takeoffIsOpen() || !e.clipboardData) return;
+        if (!signedInUserId || !takeoffIsOpen() || !e.clipboardData) return;
         const files = Array.from(e.clipboardData.files || []);
         if (files.length) {
           e.preventDefault();
