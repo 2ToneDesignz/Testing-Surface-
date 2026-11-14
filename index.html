@@ -201,17 +201,6 @@
       position: relative;
     }
 
-    .slice-annotation {
-      position: absolute;
-      border: 2px solid #ef4444;
-      background: rgba(239, 68, 68, 0.2);
-      padding: 6px 12px;
-      color: #fff;
-      font-weight: bold;
-      font-size: 0.8rem;
-      border-radius: 4px;
-    }
-
     .data-cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -493,6 +482,110 @@
       gap: 4px 12px;
     }
 
+    /* Clip box: paste, drop, or choose plan clips */
+    .slice-mockup {
+      height: auto;
+      min-height: 220px;
+      padding: 16px;
+      gap: 12px;
+      text-align: center;
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+
+    .slice-mockup.drag-over {
+      border-color: var(--accent);
+      background: #131f38;
+    }
+
+    .clip-empty {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.9rem;
+    }
+
+    .clip-empty strong {
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .clip-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      width: 100%;
+    }
+
+    .clip-grid:empty {
+      display: none;
+    }
+
+    .clip-item {
+      position: relative;
+      background: #020617;
+      border: 1px solid #05080f;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 6px 14px rgba(0,0,0,0.5);
+    }
+
+    .clip-item img {
+      display: block;
+      width: 100%;
+      max-height: 420px;
+      object-fit: contain;
+      cursor: zoom-in;
+    }
+
+    .clip-remove {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid #475569;
+      background: rgba(15, 23, 42, 0.92);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    .clip-remove:hover {
+      background: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .clip-status {
+      font-size: 0.8rem;
+      min-height: 1.1em;
+    }
+
+    .clip-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(2, 6, 23, 0.94);
+      cursor: zoom-out;
+    }
+
+    .clip-lightbox.open {
+      display: flex;
+    }
+
+    .clip-lightbox img {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 6px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    }
+
     /* Screens ease in when you switch */
     #view-dashboard, #view-takeoff, #view-inspection {
       animation: view-rise 0.22s ease-out;
@@ -595,9 +688,15 @@
           <button class="status-badge" onclick="copyGuestLink()" style="cursor: pointer; background: #334155; color: #fff;">🔗 Share Guest Link</button>
         </div>
 
-        <div class="slice-mockup">
-          <div class="slice-annotation">CROPPED BLUEBEAM MARKUP SLICE</div>
-          <span style="margin-top: 50px;">[ Cropped Vector Blueprint Slice Rendered Here ]</span>
+        <div class="slice-mockup" id="clip-zone">
+          <div class="clip-grid" id="clip-grid"></div>
+          <div class="clip-empty" id="clip-empty">
+            <strong>No clips yet</strong>
+            <span>Paste a snapshot (Ctrl+V), drag an image in here, or choose one.</span>
+          </div>
+          <button class="btn-action" id="clip-add" type="button" onclick="document.getElementById('clip-file').click()">➕ Add clip</button>
+          <div class="clip-status" id="clip-status" role="status"></div>
+          <input type="file" id="clip-file" accept="image/*" multiple hidden>
         </div>
 
         <div class="data-cards">
@@ -648,6 +747,11 @@
     </section>
   </main>
 
+  <!-- Full-size clip viewer -->
+  <div class="clip-lightbox" id="clip-lightbox" onclick="closeClipViewer()">
+    <img id="clip-lightbox-img" alt="Clip, full size">
+  </div>
+
   <script>
     function setNavBreadcrumb(name) {
       document.getElementById('nav-location').innerText = name;
@@ -673,6 +777,9 @@
       document.getElementById('node-spec').innerText = spec;
       document.getElementById('node-methodology').innerText = methodology;
       setNavBreadcrumb(title);
+      currentPhase = title;
+      setClipStatus('');
+      renderClips();
     }
 
     function showInspectionLedger() {
@@ -748,6 +855,205 @@
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     }
+
+    /* ---------- Plan clips: saved on this device, one set per phase ---------- */
+    let currentPhase = null;
+    let clipDb = null;
+    let clipDbTried = false;
+    let memoryClips = [];      // used only if this browser will not let us save
+    let memoryClipId = 0;
+    let clipUrls = [];
+
+    function setClipStatus(msg, isError) {
+      const el = document.getElementById('clip-status');
+      el.textContent = msg;
+      el.style.color = isError ? 'var(--danger)' : 'var(--text-muted)';
+    }
+
+    function openClipDb() {
+      return new Promise(function (resolve) {
+        if (clipDb || clipDbTried) return resolve(clipDb);
+        clipDbTried = true;
+        let req;
+        try {
+          req = indexedDB.open('psd-clips', 1);
+        } catch (e) {
+          return resolve(null);
+        }
+        req.onupgradeneeded = function () {
+          const store = req.result.createObjectStore('clips', { keyPath: 'id', autoIncrement: true });
+          store.createIndex('phase', 'phase');
+        };
+        req.onsuccess = function () { clipDb = req.result; resolve(clipDb); };
+        req.onerror = function () { resolve(null); };
+        req.onblocked = function () { resolve(null); };
+      });
+    }
+
+    function idbDone(req) {
+      return new Promise(function (resolve, reject) {
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error); };
+      });
+    }
+
+    async function getClips(phase) {
+      const db = await openClipDb();
+      if (!db) return memoryClips.filter(function (c) { return c.phase === phase; });
+      return idbDone(db.transaction('clips').objectStore('clips').index('phase').getAll(phase));
+    }
+
+    // Returns true if the clip was saved to this device, false if it is only held until the page closes
+    async function saveClip(phase, file) {
+      const record = { phase: phase, blob: file, name: file.name || 'clip', added: Date.now() };
+      const db = await openClipDb();
+      if (db) {
+        try {
+          await idbDone(db.transaction('clips', 'readwrite').objectStore('clips').add(record));
+          return true;
+        } catch (e) { /* fall through to memory */ }
+      }
+      record.id = 'm' + (++memoryClipId);
+      memoryClips.push(record);
+      return false;
+    }
+
+    async function removeClip(id) {
+      if (!confirm('Remove this clip?')) return;
+      if (typeof id === 'string') {
+        memoryClips = memoryClips.filter(function (c) { return c.id !== id; });
+      } else {
+        const db = await openClipDb();
+        if (db) await idbDone(db.transaction('clips', 'readwrite').objectStore('clips').delete(id));
+      }
+      setClipStatus('Clip removed.');
+      renderClips();
+    }
+
+    async function renderClips() {
+      const phase = currentPhase;
+      if (!phase) return;
+      let clips = [];
+      try {
+        clips = await getClips(phase);
+      } catch (e) {
+        setClipStatus('Could not read saved clips on this device.', true);
+      }
+      if (phase !== currentPhase) return;   // switched screens while loading
+
+      clipUrls.forEach(function (u) { URL.revokeObjectURL(u); });
+      clipUrls = [];
+
+      const grid = document.getElementById('clip-grid');
+      grid.textContent = '';
+      clips.forEach(function (clip, i) {
+        const url = URL.createObjectURL(clip.blob);
+        clipUrls.push(url);
+
+        const item = document.createElement('div');
+        item.className = 'clip-item';
+
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = 'Plan clip ' + (i + 1) + ' for ' + phase;
+        img.onclick = function () { openClipViewer(url); };
+
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'clip-remove';
+        del.textContent = '✕';
+        del.title = 'Remove this clip';
+        del.setAttribute('aria-label', 'Remove clip ' + (i + 1));
+        del.onclick = function () { removeClip(clip.id); };
+
+        item.appendChild(img);
+        item.appendChild(del);
+        grid.appendChild(item);
+      });
+
+      document.getElementById('clip-empty').style.display = clips.length ? 'none' : 'flex';
+    }
+
+    async function addClipFiles(fileList) {
+      if (!currentPhase) return;
+      const phase = currentPhase;
+      const all = Array.from(fileList || []);
+      const images = all.filter(function (f) { return f.type && f.type.indexOf('image/') === 0; });
+      if (!images.length) {
+        setClipStatus('That is not an image. Use a PNG or JPG.', true);
+        return;
+      }
+      let allSaved = true;
+      for (const f of images) {
+        if (!(await saveClip(phase, f))) allSaved = false;
+      }
+      const count = images.length === 1 ? '1 clip added.' : images.length + ' clips added.';
+      if (allSaved) setClipStatus(count + ' Saved on this device.');
+      else setClipStatus(count + ' This browser would not save it, so it will be gone when you close the page.', true);
+      renderClips();
+    }
+
+    function takeoffIsOpen() {
+      return document.getElementById('view-takeoff').style.display !== 'none';
+    }
+
+    function openClipViewer(url) {
+      document.getElementById('clip-lightbox-img').src = url;
+      document.getElementById('clip-lightbox').classList.add('open');
+    }
+
+    function closeClipViewer() {
+      document.getElementById('clip-lightbox').classList.remove('open');
+    }
+
+    (function wireClipBox() {
+      const zone = document.getElementById('clip-zone');
+      const picker = document.getElementById('clip-file');
+
+      picker.addEventListener('change', function () {
+        addClipFiles(picker.files);
+        picker.value = '';
+      });
+
+      // Ctrl+V anywhere while a takeoff screen is open
+      document.addEventListener('paste', function (e) {
+        if (!takeoffIsOpen() || !e.clipboardData) return;
+        const files = Array.from(e.clipboardData.files || []);
+        if (files.length) {
+          e.preventDefault();
+          addClipFiles(files);
+        } else {
+          setClipStatus('Nothing on the clipboard to paste as an image.', true);
+        }
+      });
+
+      function hasFiles(e) {
+        return e.dataTransfer && Array.from(e.dataTransfer.types || []).indexOf('Files') !== -1;
+      }
+
+      // Stop the browser from opening a dropped file in place of the app
+      window.addEventListener('dragover', function (e) { if (hasFiles(e)) e.preventDefault(); });
+      window.addEventListener('drop', function (e) { if (hasFiles(e)) e.preventDefault(); });
+
+      zone.addEventListener('dragover', function (e) {
+        if (!hasFiles(e)) return;
+        e.preventDefault();
+        zone.classList.add('drag-over');
+      });
+      zone.addEventListener('dragleave', function (e) {
+        if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over');
+      });
+      zone.addEventListener('drop', function (e) {
+        if (!hasFiles(e)) return;
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        addClipFiles(e.dataTransfer.files);
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeClipViewer();
+      });
+    })();
   </script>
 </body>
 </html>
