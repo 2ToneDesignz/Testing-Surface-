@@ -306,6 +306,209 @@
       font-size: 0.85rem;
     }
 
+    /* ===== Depth & finish: bevels, raised panels, recessed wells ===== */
+    body {
+      background: radial-gradient(1200px 700px at 70% -10%, #1b2a47 0%, var(--bg) 60%) fixed;
+    }
+
+    header {
+      background: linear-gradient(180deg, #16213a 0%, #0b1120 100%);
+      border-bottom: 1px solid #000;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 16px rgba(0,0,0,0.55);
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Brand plate pressed into the top bar */
+    .brand {
+      display: inline-flex;
+      padding: 7px 14px;
+      margin-bottom: 6px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #050912 0%, #0a1222 100%);
+      box-shadow:
+        inset 0 2px 6px rgba(0,0,0,0.9),
+        inset 0 -1px 0 rgba(255,255,255,0.06),
+        0 1px 0 rgba(255,255,255,0.09);
+      text-shadow: 0 -1px 0 rgba(0,0,0,0.95), 0 1px 0 rgba(255,214,140,0.22);
+    }
+
+    .status-badge {
+      border-radius: 999px;
+      padding: 6px 12px;
+      background: #0a1222;
+      border: 1px solid #000;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.75), 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    aside {
+      background: linear-gradient(180deg, #16223a 0%, #101829 100%);
+      border-right: 1px solid #000;
+      box-shadow: inset -1px 0 0 rgba(255,255,255,0.05), 4px 0 16px rgba(0,0,0,0.35);
+      position: relative;
+      z-index: 1;
+    }
+
+    .tree-item {
+      border-left: 4px solid transparent;
+      transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .tree-item:hover, .tree-item.active {
+      background: linear-gradient(90deg, #26344c 0%, #1a2538 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), inset 0 -1px 0 rgba(0,0,0,0.4);
+    }
+
+    /* Faint drafting grid behind the workspace */
+    .viewport {
+      background-image:
+        linear-gradient(rgba(148,163,184,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148,163,184,0.07) 1px, transparent 1px),
+        linear-gradient(rgba(148,163,184,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148,163,184,0.035) 1px, transparent 1px);
+      background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+    }
+
+    /* Raised, beveled panels */
+    .block-btn, .node-container, .ledger-container {
+      background: linear-gradient(160deg, #2a3952 0%, #1a2436 100%);
+      border: 1px solid #36455e;
+      border-top-color: #56688a;
+      border-bottom-color: #0a0f1c;
+      border-radius: 16px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        inset 0 -2px 0 rgba(0,0,0,0.35),
+        0 2px 0 #080c16,
+        0 12px 24px rgba(0,0,0,0.5);
+    }
+
+    .block-btn {
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+
+    .block-btn:hover {
+      background: linear-gradient(160deg, #31425f 0%, #1d283c 100%);
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.16),
+        inset 0 -2px 0 rgba(0,0,0,0.35),
+        0 2px 0 #080c16,
+        0 18px 32px rgba(0,0,0,0.6),
+        0 0 22px rgba(245,158,11,0.22);
+    }
+
+    .block-btn:active {
+      transform: translateY(1px);
+      box-shadow: inset 0 3px 8px rgba(0,0,0,0.6), 0 1px 0 #080c16;
+    }
+
+    .block-title {
+      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    }
+
+    /* Recessed wells */
+    .data-pill, .ledger-entry, .methodology-box, .slice-mockup {
+      background: #0a1120;
+      box-shadow: inset 0 2px 7px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.07);
+    }
+
+    .data-pill, .ledger-entry {
+      border-color: #05080f;
+      border-radius: 12px;
+    }
+
+    .methodology-box {
+      border-radius: 8px;
+    }
+
+    .slice-mockup {
+      border-radius: 12px;
+    }
+
+    .ai-brief {
+      border-radius: 10px;
+      background: linear-gradient(180deg, #18243d 0%, #121b2e 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 12px rgba(0,0,0,0.4), 0 0 14px rgba(59,130,246,0.14);
+    }
+
+    /* Beveled buttons that press in */
+    .btn-action {
+      background: linear-gradient(180deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%);
+      border-radius: 10px;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.6),
+        inset 0 -2px 0 rgba(120,53,15,0.5),
+        0 3px 0 #92400e,
+        0 8px 16px rgba(0,0,0,0.45);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;
+    }
+
+    .btn-action:hover {
+      filter: brightness(1.08);
+    }
+
+    .btn-action:active {
+      transform: translateY(3px);
+      box-shadow:
+        inset 0 2px 5px rgba(0,0,0,0.35),
+        0 0 0 #92400e,
+        0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    /* Grey "Return" buttons: same bevel, neutral tones */
+    .btn-action[style*="--border"] {
+      text-shadow: 0 -1px 0 rgba(0,0,0,0.5);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.18),
+        inset 0 -2px 0 rgba(0,0,0,0.3),
+        0 3px 0 #111827,
+        0 8px 16px rgba(0,0,0,0.45);
+    }
+
+    .btn-action[style*="--border"]:active {
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    /* The Share button is a real button, so it sits raised */
+    button.status-badge {
+      border: 1px solid #1f2937;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -2px 0 rgba(0,0,0,0.3), 0 2px 0 #0b1120, 0 6px 12px rgba(0,0,0,0.4);
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    button.status-badge:active {
+      transform: translateY(2px);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .status-badge {
+      white-space: nowrap;
+    }
+
+    .entry-header {
+      flex-wrap: wrap;
+      gap: 4px 12px;
+    }
+
+    /* Screens ease in when you switch */
+    #view-dashboard, #view-takeoff, #view-inspection {
+      animation: view-rise 0.22s ease-out;
+    }
+
+    @keyframes view-rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #view-dashboard, #view-takeoff, #view-inspection { animation: none; }
+      .block-btn, .btn-action { transition: none; }
+      .block-btn:hover { transform: none; }
+    }
+
     /* Responsive adjustments for phones */
     @media (max-width: 768px) {
       aside {
@@ -316,6 +519,18 @@
       }
       .grid-dashboard {
         grid-template-columns: 1fr;
+      }
+      header {
+        gap: 10px;
+      }
+      .brand {
+        white-space: nowrap;
+        font-size: 0.95rem;
+        padding: 6px 11px;
+      }
+      .status-badge {
+        font-size: 0.68rem;
+        padding: 5px 9px;
       }
     }
   </style>
@@ -452,7 +667,7 @@
 
     function showTakeoff(title, qty, spec, methodology) {
       hideAllViews();
-      document.getElementById('view-takeoff').style.display = 'block';
+      document.getElementById('view-takeoff').style.display = 'flex';
       document.getElementById('node-title').innerText = title;
       document.getElementById('node-qty').innerText = qty;
       document.getElementById('node-spec').innerText = spec;
